@@ -7,11 +7,20 @@ deals and take safe actions using PostgreSQL, web research and a dashboard.
 
 ## What to build
 
-1. **Analyze:** answer pipeline and revenue questions. Recommend three active
-   deals to prioritize, backed by figures and a clear rationale.
-2. **Research:** find relevant cybersecurity, service continuity, technology
-   lifecycle or regulatory risks online. Cite sources and dates, explain the
-   potential customer impact, and suggest a sales follow-up.
+**Database setup:** import both supplied CSV files into a relational database,
+such as PostgreSQL. The application must query that database and persist
+confirmed deal updates there, rather than use the CSV files directly as its
+runtime data store. Include database setup and import steps in your instructions.
+
+1. **Analyze and prepare:** help a salesperson prepare for a customer meeting.
+   Summarize our recorded revenue from the account, open opportunities and past
+   Won/Lost proposals. Support comparisons by period, product and cluster.
+   Recommend three Active deals to prioritize, backed by figures and a rationale.
+2. **Research and recommend:** add relevant public company or industry context,
+   including cybersecurity, service continuity, technology lifecycle or
+   regulatory risks. Cite sources and dates. Turn the findings into discussion
+   topics, discovery questions and possible next steps for the customer meeting,
+   not just a list of news articles.
 3. **Update:** preview allowed deal changes and ask for confirmation before
    saving. Cancellation must perform no write.
 4. **Generate and adapt the UI through chat:** turn natural-language requests
@@ -139,13 +148,102 @@ exist, including zero-revenue months.
 | `cluster` | The service category. Sum the four clusters for total monthly revenue per customer. |
 
 
-## Try these prompts
+## Typical sales workflows to support
 
-- "Which customers have declining revenue and active renewal opportunities?"
-- "Research cybersecurity risks affecting manufacturers and suggest next steps."
-- "Set opportunity 990600001's win probability to 60 percent."
-- "Move opportunity 990600001's close date to 2026-12-15." Then **cancel at the confirmation step**, as explained below.
-- "Show only active Security opportunities, sort by value, and display revenue as a line chart."
+The examples below adapt common sales-assistant requests to this exercise.
+They are illustrative conversations, not scripts to hard-code. Keep the selected
+customer, period and filters across follow-up questions; ask for clarification
+when the intended scope is ambiguous.
+
+### 1. Prepare for a customer meeting
+
+- **Start:** "Prepare me for a sales meeting with Siemens. Show our recorded
+  revenue from this account for January–October 2026, the monthly trend, and
+  its current open opportunities."
+- **Follow up:** "Break the revenue down by cluster. Which products appear in
+  its Won and Lost opportunities since January 2024?"
+- **Then:** "Suggest three discussion topics and five discovery questions based
+  on these figures and relevant public company or industry information."
+
+**Expected:** generate an account briefing with revenue summary cards, a monthly
+chart and a deal table. Keep internal simulated figures separate from cited
+external facts and from recommendations. Opportunity history is evidence of
+proposals, not a verified inventory of the customer's current installed services.
+
+### 2. Review and prioritize the open pipeline
+
+- **Start:** "Show the Active pipeline by cluster, with both unweighted and
+  probability-weighted value and the number of distinct deals."
+- **Follow up:** "Show the five largest Active Security deals by full-deal value,
+  including probability and expected close date."
+- **Then:** "Which three Active deals should I focus on, and why? Highlight any
+  overdue expected close dates."
+
+**Expected:** generate a pipeline overview and drill-down table. Label whether
+cluster values include only matching product lines or the full value of matching
+deals. Explain the prioritization rule; do not present weighted pipeline as
+guaranteed revenue.
+
+### 3. Understand account performance and past outcomes
+
+- **Start:** "Which five customers generated the most recorded revenue for us
+  in 2025? Show their revenue by cluster."
+- **Follow up:** "For those same customers, compare January–October 2026 with
+  January–October 2025, including the absolute and percentage change."
+- **Then:** "Which customers have declining revenue in Q3 2026 versus Q2 2026
+  and also have Active renewal opportunities?"
+- **Another drill-down:** "Show Volkswagen's Won and Lost Cloud Services
+  opportunities closed between 2022 and 2025, with values and loss comments."
+
+**Expected:** comparable periods, distinct deal counts and separate customer-level
+aggregations before joining revenue to opportunities. Use `close_date` for the
+requested closed-deal history, not creation date. Show an undefined percentage
+change explicitly when the comparison base is zero. Loss comments describe
+simulated outcomes, not verified causes of a real company's behavior.
+
+### 4. Find a relevant next conversation
+
+- **Start:** "Review Siemens's opportunity history and suggest two products
+  from our catalog that would be worth discussing next. Explain the evidence
+  and what we still need to ask the customer."
+- **Follow up:** "Research cybersecurity risks affecting manufacturers. Cite
+  sources and dates, and turn the findings into a short meeting agenda."
+
+**Expected:** connect evidence to a plausible sales conversation and discovery
+questions. A product absent from the database is not proof that the customer
+does not use it or buys it elsewhere. Distinguish our simulated account revenue
+from the company's own public turnover; do not substitute one for the other.
+
+### 5. Generate a view, refine it and safely change a deal
+
+- **Start:** "Build a dashboard with Active pipeline summary cards, a monthly
+  revenue chart for January–October 2026, and a table of Active opportunities."
+- **Follow up:** "In the opportunity table, show only Security deals and sort by
+  full-deal value. Change the revenue chart to a line chart and hide the weighted
+  pipeline card."
+- **Then:** "Set opportunity 990600001's win probability to 60 percent."
+  Review the preview and explicitly **confirm**.
+- **Cancellation test:** "Move opportunity 990600001's close date to 2026-12-15."
+  Then **cancel at the confirmation step**, as explained below.
+
+**Expected:** compose and update real UI components, not just describe a
+dashboard in text. The table filter must not silently change the revenue chart's
+scope. Save the probability on every product line of the deal, including lines
+hidden by the Security filter, and refresh affected data without a page reload.
+The cancelled date change must perform no write.
+
+### Stay within the available data
+
+The two tables do not contain contacts, account-manager ownership, addresses,
+site counts, installed equipment, service usage, actual contract expiry dates
+or a corporate group hierarchy. Do not invent these or add integrations as a
+requirement. Explain the limitation and offer an answer supported by the data.
+`close_date` is a deal decision date, not a contract expiry date.
+
+These workflows illustrate the four core tasks; they do not require extra
+features such as email sending, PowerPoint/PDF export or access to internal
+company systems. Never copy production conversations, personal details or
+internal identifiers into the public app or demo.
 
 ### Cancellation example: preview, then discard
 
@@ -168,6 +266,9 @@ separately confirmed edits must also remain intact.
 Deliver a working chatbot, setup instructions and a short demo showing:
 **a database answer, three recommended deals, cited research, a confirmed update,
 a cancelled update, a chat-driven UI change and refresh after saving**.
+Present these as a short connected sales workflow, for example meeting
+preparation followed by a drill-down, generated UI and a confirmed deal edit.
+Include a follow-up question to demonstrate that conversational context is kept.
 
 ## Judging criteria
 
