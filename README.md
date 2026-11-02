@@ -14,9 +14,13 @@ deals and take safe actions using PostgreSQL, web research and a dashboard.
    potential customer impact, and suggest a sales follow-up.
 3. **Update:** preview allowed deal changes and ask for confirmation before
    saving. Cancellation must perform no write.
-4. **Control the dashboard:** filter tables, sort deals, switch chart types and
-   show/hide cards through chat. Refresh affected components after saved edits
-   without reloading the page.
+4. **Generate and adapt the UI through chat:** turn natural-language requests
+   into relevant tables, charts and summary cards, not just text answers or
+   filters on a fixed dashboard. Dynamically compose the view using predefined
+   components and validated settings, rather than executing arbitrary
+   AI-generated code. Let users refine the layout, filters, sorting and chart
+   types through follow-up prompts. Refresh affected components after saved
+   deal edits without reloading the page.
 
 ## The business context
 
@@ -108,7 +112,7 @@ deal-level values; only `product_name`, `cluster` and `total_price_eur` may diff
 | --- | --- |
 | `source_opportunity_number` | Unique deal ID, repeated across its product lines. Use it to identify a deal or count distinct deals. |
 | `business_partner_number` | Invented customer/account ID. The join key to revenue; not a real company registration number. |
-| `source_business_partner_name` | Real company or brand name used as a label for the simulated account. |
+| `business_partner_name` | Real company or brand name used as a label for the simulated account. |
 | `product_name` | Service offered on this line, such as Business Fiber 500 or Email Security. A line may cover multiple units; quantities are already included in its value. |
 | `cluster` | Product category: Connectivity, Cloud Services, Security, or Workplace & Communications. |
 | `total_price_eur` | This line's full net proposal value: 12 months for recurring services, or the full one-off fee. Not a unit price or a monthly amount. |
@@ -164,3 +168,12 @@ separately confirmed edits must also remain intact.
 Deliver a working chatbot, setup instructions and a short demo showing:
 **a database answer, three recommended deals, cited research, a confirmed update,
 a cancelled update, a chat-driven UI change and refresh after saving**.
+
+## Judging criteria
+
+| Area | What we will evaluate |
+| --- | --- |
+| Presentation and demo | A clear explanation of the solution, a working demo, and the team's ability to explain its decisions and limitations. |
+| System architecture | Clear responsibilities for the LLM, backend, database and UI; sensible technical choices, error handling and a design that can scale to millions of records. |
+| Usability | An intuitive chat and dashboard, clear answers, understandable confirmations and error messages, and a smooth workflow for sales users. |
+| Creativity | Original, useful ideas for applying AI and presenting insights that make the sales workflow better, rather than adding complexity for its own sake. |

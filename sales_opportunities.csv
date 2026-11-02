@@ -1,4 +1,4 @@
-source_opportunity_number,business_partner_number,source_business_partner_name,product_name,cluster,total_price_eur,order_entry,won_lost_active_status,phase_label,win_probability_percent,opportunity_created_at,close_date,opportunity_type,closed_lost_comment
+source_opportunity_number,business_partner_number,business_partner_name,product_name,cluster,total_price_eur,order_entry,won_lost_active_status,phase_label,win_probability_percent,opportunity_created_at,close_date,opportunity_type,closed_lost_comment
 990600001,880100001,Siemens,Business Fiber 1000,Connectivity,12000.00,14400.00,Active,Solution design,40,2026-09-15,2026-11-20,New Business,
 990600001,880100001,Siemens,5G Business Backup,Connectivity,2400.00,14400.00,Active,Solution design,40,2026-09-15,2026-11-20,New Business,
 990600002,880100001,Siemens,Dedicated Internet Access,Connectivity,23760.00,23760.00,Won,Closed won,100,2016-11-01,2016-11-15,New Business,
