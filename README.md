@@ -5,6 +5,35 @@
 Build a chatbot that helps a sales team understand customer revenue, prioritize
 deals and take safe actions using PostgreSQL, web research and a dashboard.
 
+## Use case at a glance
+
+```mermaid
+flowchart LR
+    user["SALESPERSON / USER"]
+    copilot["AI SALES COPILOT CHATBOT"]
+    database["POSTGRESQL DATABASE<br/>---<br/>sales_opportunities table: Deals,<br/>products, status, pipeline<br/>customer_revenue_monthly<br/>table: Recorded monthly revenue"]
+    research["PUBLIC WEB RESEARCH<br/>---<br/>Risks, news, industry context"]
+    answers["ANSWER / RECOMMENDATIONS"]
+    dashboard["DASHBOARD / UI<br/>---<br/>Cards, charts, tables"]
+
+    user --> copilot
+    copilot --> database
+    database --> copilot
+    copilot --> research
+    research --> copilot
+    copilot --> answers
+    copilot --> dashboard
+```
+
+The salesperson asks a question in chat. The copilot queries the database for
+sales figures, uses public web research when external context is needed, and
+returns an answer together with useful cards, charts or tables. Deal changes
+go through a preview and explicit confirmation before being saved.
+
+This diagram shows the main interactions, not a required technical architecture.
+Database and search access should go through controlled backend tools, not
+unrestricted access by the model.
+
 ## What to build
 
 **Database setup:** import both supplied CSV files into a relational database,
@@ -272,9 +301,17 @@ Include a follow-up question to demonstrate that conversational context is kept.
 
 ## Judging criteria
 
-| Area | What we will evaluate |
-| --- | --- |
-| Presentation and demo | A clear explanation of the solution, a working demo, and the team's ability to explain its decisions and limitations. |
-| System architecture | Clear responsibilities for the LLM, backend, database and UI; sensible technical choices, error handling and a design that can scale to millions of records. |
-| Usability | An intuitive chat and dashboard, clear answers, understandable confirmations and error messages, and a smooth workflow for sales users. |
-| Creativity | Original, useful ideas for applying AI and presenting insights that make the sales workflow better, rather than adding complexity for its own sake. |
+| Area | What we will evaluate | Points |
+| --- | --- | ---: |
+| System architecture | Clear responsibilities for the LLM, backend, database and UI; sensible technical choices, error handling and a design that can scale to millions of records. | 20 |
+| Usability | An intuitive chat and dashboard, clear answers, understandable confirmations and error messages, and a smooth workflow for sales users. | 20 |
+| Creativity | Original, useful ideas for applying AI and presenting insights that make the sales workflow better, rather than adding complexity for its own sake. | 20 |
+| Presentation and demo | A clear explanation of the solution, a working demo, and the team's ability to explain its decisions, limitations and trade-offs. | 40 |
+| **Total** | | **100** |
+
+You may use different LLM models depending on availability. Judging will
+therefore consider not only the final output, but also the team's **AI and
+engineering thinking behind the solution**: how well the team designs the
+architecture, uses the database safely and efficiently, handles confirmations
+and cancellations, explains limitations, and builds a useful sales workflow.
+Make these choices and trade-offs visible in your presentation and demo.
