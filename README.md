@@ -6,6 +6,8 @@ Build a chatbot that helps a sales team understand customer revenue, prioritize
 deals and take safe actions using PostgreSQL. Generated UI and web research are
 optional extensions; build generated UI first, then web research.
 
+[View the kickoff presentation](https://htmlpreview.github.io/?https://github.com/richardkocian/absl-hackathon/blob/main/presentation.html)
+
 ## Use case at a glance
 
 ```mermaid
