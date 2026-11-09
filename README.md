@@ -3,7 +3,8 @@
 **English-language chatbot**
 
 Build a chatbot that helps a sales team understand customer revenue, prioritize
-deals and take safe actions using PostgreSQL, web research and a dashboard.
+deals and take safe actions using PostgreSQL. Generated UI and web research are
+optional extensions; build generated UI first, then web research.
 
 ## Use case at a glance
 
@@ -12,23 +13,23 @@ flowchart LR
     user["SALESPERSON / USER"]
     copilot["AI SALES COPILOT CHATBOT"]
     database["POSTGRESQL DATABASE<br/>---<br/>sales_opportunities table: Deals,<br/>products, status, pipeline<br/>customer_revenue_monthly<br/>table: Recorded monthly revenue"]
-    research["PUBLIC WEB RESEARCH<br/>---<br/>Risks, news, industry context"]
     answers["ANSWER / RECOMMENDATIONS"]
-    dashboard["DASHBOARD / UI<br/>---<br/>Cards, charts, tables"]
+    dashboard["GENERATED DASHBOARD / UI (OPTIONAL, FIRST)<br/>---<br/>Cards, charts, tables"]
+    research["PUBLIC WEB RESEARCH (OPTIONAL, SECOND)<br/>---<br/>Risks, news, industry context"]
 
     user --> copilot
     copilot --> database
     database --> copilot
-    copilot --> research
-    research --> copilot
     copilot --> answers
-    copilot --> dashboard
+    copilot -.-> dashboard
+    copilot -.-> research
+    research -.-> copilot
 ```
 
 The salesperson asks a question in chat. The copilot queries the database for
-sales figures, uses public web research when external context is needed, and
-returns an answer together with useful cards, charts or tables. Deal changes
-go through a preview and explicit confirmation before being saved.
+sales figures and returns an answer. Deal changes go through a preview and
+explicit confirmation before being saved. Teams may optionally add generated
+cards, charts and tables through chat, followed by public web research.
 
 This diagram shows the main interactions, not a required technical architecture.
 Database and search access should go through controlled backend tools, not
@@ -36,29 +37,40 @@ unrestricted access by the model.
 
 ## What to build
 
-**Database setup:** import both supplied CSV files into a relational database,
+**Required:** database analysis, three recommended Active deals and safe deal
+updates. **Optional:** a dashboard generated and adapted through chat, and web research.
+
+**Build order:** finish the required workflow first. If you choose to add
+extensions, implement generated UI first; add web research only afterwards.
+Both extensions remain optional.
+
+**Recommended approach:** use [Pydantic AI](https://ai.pydantic.dev/) to build the
+copilot's agent and tool integrations. Other frameworks are also welcome.
+
+**Database setup (required):** import both supplied CSV files into a relational database,
 such as PostgreSQL. The application must query that database and persist
 confirmed deal updates there, rather than use the CSV files directly as its
 runtime data store. Include database setup and import steps in your instructions.
 
-1. **Analyze and prepare:** help a salesperson prepare for a customer meeting.
+1. **Required — Analyze and prepare:** help a salesperson prepare for a customer meeting.
    Summarize our recorded revenue from the account, open opportunities and past
    Won/Lost proposals. Support comparisons by period, product and cluster.
    Recommend three Active deals to prioritize, backed by figures and a rationale.
-2. **Research and recommend:** add relevant public company or industry context,
-   including cybersecurity, service continuity, technology lifecycle or
-   regulatory risks. Cite sources and dates. Turn the findings into discussion
-   topics, discovery questions and possible next steps for the customer meeting,
-   not just a list of news articles.
-3. **Update:** preview allowed deal changes and ask for confirmation before
-   saving. Cancellation must perform no write.
-4. **Generate and adapt the UI through chat:** turn natural-language requests
+2. **Required — Update:** preview allowed deal changes and ask for confirmation
+   before saving. Apply confirmed changes to all product lines of the deal using
+   controlled, parameterized writes. Cancellation must perform no write.
+3. **Optional — Generate and adapt the UI through chat (first extension):** turn natural-language requests
    into relevant tables, charts and summary cards, not just text answers or
    filters on a fixed dashboard. Dynamically compose the view using predefined
    components and validated settings, rather than executing arbitrary
    AI-generated code. Let users refine the layout, filters, sorting and chart
    types through follow-up prompts. Refresh affected components after saved
    deal edits without reloading the page.
+4. **Optional — Research and recommend (second extension):** add relevant public
+   company or industry context, including cybersecurity, service continuity,
+   technology lifecycle or regulatory risks. Cite sources and dates. Turn the
+   findings into discussion topics, discovery questions and possible next steps
+   for the customer meeting, not just a list of news articles.
 
 ## The business context
 
@@ -75,7 +87,10 @@ A **renewal** continues an existing arrangement; **upsell** expands its scope.
 **Pipeline** is potential deal value; **revenue** is money already recorded.
 Winning a deal does not mean all its value has already become revenue.
 
-## Research: what risks to look for
+## Optional web research: what risks to look for
+
+This section applies only if you implement web research.
+Work on this extension after generated UI, not before it.
 
 Focus on risks relevant to the selected customer or industry, not generic bad news:
 
@@ -119,6 +134,9 @@ their full fee once, in that first month. Active/Lost contribute nothing.
 Amounts scheduled after October 2026 are future revenue, not historical revenue.
 There are no opening contracts, arbitrary revenue noise or credit adjustments.
 
+Prices and recorded revenue are read-only. Confirmed edits to a deal's status
+or close date do not recalculate the supplied historical revenue in this exercise.
+
 ## Design for millions of rows
 
 This is a small simulation for easy setup. **Design the application as if each
@@ -131,9 +149,9 @@ that works only because the supplied dataset fits in memory is not sufficient.
   and send the model compact query results, not the full dataset.
 - Use appropriate indexes and query timeouts. A result limit alone does not
   make an expensive query safe; consider how much data the database must process.
-- Fetch and refresh only the data needed by affected components. Handle slow
-  queries and failures explicitly rather than freezing the UI or silently
-  returning incomplete answers.
+- If you build a dashboard, fetch and refresh only the data needed by affected
+  components. Handle slow queries and failures explicitly rather than freezing
+  the UI or silently returning incomplete answers.
 
 ## Field guide
 
@@ -184,6 +202,10 @@ They are illustrative conversations, not scripts to hard-code. Keep the selected
 customer, period and filters across follow-up questions; ask for clarification
 when the intended scope is ambiguous.
 
+Database answers and safe updates are required. Generated cards, charts and
+dashboard tables are optional; web research is a second optional extension.
+Without a generated dashboard, return the analysis and recommendations in chat.
+
 ### 1. Prepare for a customer meeting
 
 - **Start:** "Prepare me for a sales meeting with Siemens. Show our recorded
@@ -192,11 +214,12 @@ when the intended scope is ambiguous.
 - **Follow up:** "Break the revenue down by cluster. Which products appear in
   its Won and Lost opportunities since January 2024?"
 - **Then:** "Suggest three discussion topics and five discovery questions based
-  on these figures and relevant public company or industry information."
+  on these figures and the account's opportunity history."
 
-**Expected:** generate an account briefing with revenue summary cards, a monthly
-chart and a deal table. Keep internal simulated figures separate from cited
-external facts and from recommendations. Opportunity history is evidence of
+**Expected:** provide an account briefing with revenue figures, the monthly trend
+and open deals. Revenue summary cards, a chart and a deal table are optional
+presentation options. Distinguish database facts from recommendations and, if
+you add web research, from cited external facts. Opportunity history is evidence of
 proposals, not a verified inventory of the customer's current installed services.
 
 ### 2. Review and prioritize the open pipeline
@@ -208,7 +231,8 @@ proposals, not a verified inventory of the customer's current installed services
 - **Then:** "Which three Active deals should I focus on, and why? Highlight any
   overdue expected close dates."
 
-**Expected:** generate a pipeline overview and drill-down table. Label whether
+**Expected:** provide a pipeline overview and deal-level details; a generated
+drill-down table is optional. Label whether
 cluster values include only matching product lines or the full value of matching
 deals. Explain the prioritization rule; do not present weighted pipeline as
 guaranteed revenue.
@@ -235,7 +259,7 @@ simulated outcomes, not verified causes of a real company's behavior.
 - **Start:** "Review Siemens's opportunity history and suggest two products
   from our catalog that would be worth discussing next. Explain the evidence
   and what we still need to ask the customer."
-- **Follow up:** "Research cybersecurity risks affecting manufacturers. Cite
+- **Optional web-research follow-up:** "Research cybersecurity risks affecting manufacturers. Cite
   sources and dates, and turn the findings into a short meeting agenda."
 
 **Expected:** connect evidence to a plausible sales conversation and discovery
@@ -244,6 +268,9 @@ does not use it or buys it elsewhere. Distinguish our simulated account revenue
 from the company's own public turnover; do not substitute one for the other.
 
 ### 5. Generate a view, refine it and safely change a deal
+
+Generating and refining the dashboard is **optional**. The confirmed and
+cancelled deal updates below are **required**, even without a dashboard.
 
 - **Start:** "Build a dashboard with Active pipeline summary cards, a monthly
   revenue chart for January–October 2026, and a table of Active opportunities."
@@ -255,11 +282,12 @@ from the company's own public turnover; do not substitute one for the other.
 - **Cancellation test:** "Move opportunity 990600001's close date to 2026-12-15."
   Then **cancel at the confirmation step**, as explained below.
 
-**Expected:** compose and update real UI components, not just describe a
-dashboard in text. The table filter must not silently change the revenue chart's
+**If you implement the dashboard:** compose and update real UI components, not
+just describe a dashboard in text. The table filter must not silently change the revenue chart's
 scope. Save the probability on every product line of the deal, including lines
 hidden by the Security filter, and refresh affected data without a page reload.
-The cancelled date change must perform no write.
+The cancelled date change must perform no write. Without a dashboard, demonstrate
+both updates in chat and verify the stored database values.
 
 ### Stay within the available data
 
@@ -269,7 +297,7 @@ or a corporate group hierarchy. Do not invent these or add integrations as a
 requirement. Explain the limitation and offer an answer supported by the data.
 `close_date` is a deal decision date, not a contract expiry date.
 
-These workflows illustrate the four core tasks; they do not require extra
+These workflows illustrate the required features and optional extensions; they do not require extra
 features such as email sending, PowerPoint/PDF export or access to internal
 company systems. Never copy production conversations, personal details or
 internal identifiers into the public app or demo.
@@ -292,22 +320,29 @@ separately confirmed edits must also remain intact.
 
 ## Deliver and demo
 
-Deliver a working chatbot, setup instructions and a short demo showing:
-**a database answer, three recommended deals, cited research, a confirmed update,
-a cancelled update, a chat-driven UI change and refresh after saving**.
+**Required:** deliver a working chatbot, setup instructions and a short demo
+showing **a database answer, three recommended Active deals, a confirmed update
+and a cancelled update**.
 Present these as a short connected sales workflow, for example meeting
-preparation followed by a drill-down, generated UI and a confirmed deal edit.
+preparation followed by a drill-down and a confirmed deal edit.
 Include a follow-up question to demonstrate that conversational context is kept.
+
+**Optional extensions, in build order:** if you implement generated UI,
+demonstrate a chat-driven view change and refresh of affected components after
+saving. If you then add web research, demonstrate findings with sources and dates.
 
 ## Judging criteria
 
 | Area | What we will evaluate | Points |
 | --- | --- | ---: |
-| System architecture | Clear responsibilities for the LLM, backend, database and UI; sensible technical choices, error handling and a design that can scale to millions of records. | 20 |
-| Usability | An intuitive chat and dashboard, clear answers, understandable confirmations and error messages, and a smooth workflow for sales users. | 20 |
+| System architecture | Clear responsibilities for the LLM, backend, database and any UI components; sensible technical choices, error handling and a design that can scale to millions of records. | 20 |
+| Usability | An intuitive chat and, if implemented, dashboard; clear answers, understandable confirmations and error messages, and a smooth workflow for sales users. | 20 |
 | Creativity | Original, useful ideas for applying AI and presenting insights that make the sales workflow better, rather than adding complexity for its own sake. | 20 |
 | Presentation and demo | A clear explanation of the solution, a working demo, and the team's ability to explain its decisions, limitations and trade-offs. | 40 |
 | **Total** | | **100** |
+
+Generated UI and web research are not prerequisites for completing the required
+scope. If implemented, explain and demonstrate how they improve the workflow.
 
 You may use different LLM models depending on availability. Judging will
 therefore consider not only the final output, but also the team's **AI and
